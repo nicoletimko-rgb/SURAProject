@@ -1,0 +1,161 @@
+---
+title: "shortened"
+output:
+  pdf_document: default
+  html_document: default
+date: "2025-06-24"
+---
+
+```{r}
+library("readr")
+library("dplyr")
+library("ggplot2")
+library("stringr")
+library("car")
+library("glue")
+```
+
+```{r}
+season_name <- "2024_25"
+shortened <- readr::read_csv(glue("Desktop/SURA project code/data frames/", season_name,"_shortened.csv"))
+
+player_lineup <- readr::read_csv(glue("Desktop/SURA project code/data frames/", season_name,"_player_lineup.csv"))
+```
+
+
+```{r}
+t_f <- c("3", "4")
+
+subset_data <- subset(shortened, subset = `NUMBER OF GUARDS` %in% t_f)
+```
+
+
+```{r}
+
+combined_point <- subset(shortened, LINEUP_SORTED == "COMBINED")
+
+ggplot(data = subset(shortened, subset = `NUMBER OF GUARDS` %in% t_f), aes(x = `LINEUP SECONDS`, y = `NET RATING`, color = factor(`NUMBER OF GUARDS`))) + geom_point() + geom_point(data = combined_point, aes(x = `LINEUP SECONDS`, y = `NET RATING`), color = "red", size = 3, shape = 17, inherit.aes = FALSE) +   geom_text(aes(label = NUMBERS), hjust = -0.12, size = 3) + labs(title = "NET RATING vs LINEUP SECONDS", color = "NUMBER OF GUARDS") + scale_color_manual(values = c("3" = "purple", "4" = "sky blue")) + theme(plot.title = element_text(hjust = 0.5)) + coord_cartesian(xlim = c(0, 13000))
+
+ggplot(data = subset(shortened, subset = `NUMBER OF GUARDS` %in% t_f), aes(x = `LINEUP SECONDS`, y = `PACE`, color = factor(`NUMBER OF GUARDS`))) + geom_point()+ geom_point(data = combined_point, aes(x = `LINEUP SECONDS`, y = `PACE`), color = "red", size = 3, shape = 17, inherit.aes = FALSE) +   geom_text(aes(label = NUMBERS), hjust = -0.12, size = 3) + labs(title = "PACE vs LINEUP SECONDS", color = "NUMBER OF GUARDS") + scale_color_manual(values = c("3" = "purple", "4" = "sky blue")) + theme(plot.title = element_text(hjust = 0.5)) + coord_cartesian(xlim = c(0, 13000))
+
+ggplot(data = subset(shortened, subset = `NUMBER OF GUARDS` %in% t_f), aes(x = `LINEUP SECONDS`, y = `TRB%`, color = factor(`NUMBER OF GUARDS`))) + geom_point()+ geom_point(data = combined_point, aes(x = `LINEUP SECONDS`, y = `TRB%`), color = "red", size = 3, shape = 17, inherit.aes = FALSE) +   geom_text(aes(label = NUMBERS), hjust = -0.12, size = 3) + labs(title = "TRB% vs LINEUP SECONDS", color = "NUMBER OF GUARDS") + scale_color_manual(values = c("3" = "purple", "4" = "sky blue")) + theme(plot.title = element_text(hjust = 0.5)) + coord_cartesian(xlim = c(0, 13000))
+
+ggplot(data = subset(shortened, subset = `NUMBER OF GUARDS` %in% t_f), aes(x = `LINEUP SECONDS`, y = `TRUE SHOOTING %`, color = factor(`NUMBER OF GUARDS`))) + geom_point()+ geom_point(data = combined_point, aes(x = `LINEUP SECONDS`, y = `TRUE SHOOTING %`), color = "red", size = 3, shape = 17, inherit.aes = FALSE) +   geom_text(aes(label = NUMBERS), hjust = -0.12, size = 3) + labs(title = "TRUE SHOOTING % vs LINEUP SECONDS", color = "NUMBER OF GUARDS") + scale_color_manual(values = c("3" = "purple", "4" = "sky blue")) + theme(plot.title = element_text(hjust = 0.5)) + coord_cartesian(xlim = c(0, 13000))
+
+ggplot(data = subset(shortened, subset = `NUMBER OF GUARDS` %in% t_f), aes(x = `LINEUP SECONDS`, y = `3PA/FGA`, color = factor(`NUMBER OF GUARDS`))) + geom_point()+ geom_point(data = combined_point, aes(x = `LINEUP SECONDS`, y = `3PA/FGA`), color = "red", size = 3, shape = 17, inherit.aes = FALSE) +   geom_text(aes(label = NUMBERS), hjust = -0.12, size = 3) + labs(title = "3PA/FGA vs LINEUP SECONDS", color = "NUMBER OF GUARDS") + scale_color_manual(values = c("3" = "purple", "4" = "sky blue")) + theme(plot.title = element_text(hjust = 0.5)) + coord_cartesian(xlim = c(0, 13000))
+
+ggplot(data = subset(shortened, subset = `NUMBER OF GUARDS` %in% t_f), aes(x = `LINEUP SECONDS`, y = `OFFENSIVE RATING`, color = factor(`NUMBER OF GUARDS`))) + geom_point()+ geom_point(data = combined_point, aes(x = `LINEUP SECONDS`, y = `OFFENSIVE RATING`), color = "red", size = 3, shape = 17, inherit.aes = FALSE) +   geom_text(aes(label = NUMBERS), hjust = -0.12, size = 3) + labs(title = "OFFENSIVE RATING vs LINEUP SECONDS", color = "NUMBER OF GUARDS") + scale_color_manual(values = c("3" = "purple", "4" = "sky blue")) + theme(plot.title = element_text(hjust = 0.5)) + coord_cartesian(xlim = c(0, 13000))
+
+ggplot(data = subset(shortened, subset = `NUMBER OF GUARDS` %in% t_f), aes(x = `LINEUP SECONDS`, y = `DEFENSIVE RATING`, color = factor(`NUMBER OF GUARDS`))) + geom_point()+ geom_point(data = combined_point, aes(x = `LINEUP SECONDS`, y = `DEFENSIVE RATING`), color = "red", size = 3, shape = 17, inherit.aes = FALSE) +  geom_text(aes(label = NUMBERS), hjust = -0.12, size = 3) + labs(title = "DEFENSIVE RATING vs LINEUP SECONDS", color = "NUMBER OF GUARDS") + scale_color_manual(values = c("3" = "purple", "4" = "sky blue")) + theme(plot.title = element_text(hjust = 0.5)) + coord_cartesian(xlim = c(0, 13000))
+
+
+```
+```{r}
+ggplot(data = player_lineup, aes(x = `NUMBER`, y = `NET RATING`)) + geom_point() + labs(title = "NET RATING vs PLAYER") + geom_text(aes(label = LABEL), hjust = -0.2, size = 3) + theme(plot.title = element_text(hjust = 0.5)) + coord_cartesian(xlim = c(0, 50))
+
+ggplot(data = player_lineup, aes(x = `NUMBER`, y = `PACE`)) + geom_point() + labs(title = "PACE vs PLAYER") + geom_text(aes(label = LABEL), hjust = -0.2, size = 3) + theme(plot.title = element_text(hjust = 0.5)) + coord_cartesian(xlim = c(0, 50))
+
+ggplot(data = player_lineup, aes(x = `NUMBER`, y = `TRB%`)) + geom_point() + labs(title = "TRB% vs PLAYER") + geom_text(aes(label = LABEL), hjust = -0.2, size = 3) + theme(plot.title = element_text(hjust = 0.5)) + coord_cartesian(xlim = c(0, 50))
+
+ggplot(data = player_lineup, aes(x = `NUMBER`, y = `OFFENSIVE RATING`)) + geom_point() + labs(title = "OFFENSIVE RATING vs PLAYER") + geom_text(aes(label = LABEL), hjust = -0.2, size = 3) + theme(plot.title = element_text(hjust = 0.5)) + coord_cartesian(xlim = c(0, 50))
+
+ggplot(data = player_lineup, aes(x = `NUMBER`, y = `DEFENSIVE RATING`)) + geom_point() + labs(title = "DEFFENSIVE RATING vs PLAYER") + geom_text(aes(label = LABEL), hjust = -0.2, size = 3) + theme(plot.title = element_text(hjust = 0.5)) + coord_cartesian(xlim = c(0, 50))
+
+ggplot(data = player_lineup, aes(x = `NUMBER`, y = `3PA/FGA`)) + geom_point() + labs(title = "3PA/FGA vs PLAYER") + geom_text(aes(label = LABEL), hjust = -0.2, size = 3) + theme(plot.title = element_text(hjust = 0.5)) + coord_cartesian(xlim = c(0, 50))
+
+ggplot(data = player_lineup, aes(x = `NUMBER`, y = `TRUE SHOOTING %`)) + geom_point() + labs(title = "TRUE SHOOTING % vs PLAYER") + geom_text(aes(label = LABEL), hjust = -0.2, size = 3) + theme(plot.title = element_text(hjust = 0.5)) + coord_cartesian(xlim = c(0, 50))
+```
+
+```{r}
+ggplot(data = subset(shortened, subset = `NUMBER OF GUARDS` %in% t_f), aes(x = `NET RATING`, fill = factor(`NUMBER OF GUARDS`))) + geom_histogram(position = "identity", alpha = 0.5, bins = 30) + labs(title = "Net Rating by Lineup Type", x = "Net Rating", fill = "Number of Guards") + scale_fill_manual(values = c("3" = "purple", "4" = "sky blue")) + theme(plot.title = element_text(hjust = 0.5)) + geom_text(x = -10, y =1.8, label = "Mann-Whitney U Test p-value: 0.49")
+
+shapiro.test(shortened$`NET RATING`)
+
+summary(subset(shortened, subset = `NUMBER OF GUARDS` %in% t_f)$`NET RATING`)
+tapply(shortened$`NET RATING`[shortened$`NUMBER OF GUARDS` %in% t_f], shortened$`NUMBER OF GUARDS`[shortened$`NUMBER OF GUARDS` %in% t_f], summary)
+
+wilcox.test(`NET RATING` ~ `NUMBER OF GUARDS`, data = subset(shortened, `NUMBER OF GUARDS` %in% t_f), exact = FALSE)
+
+```
+
+```{r}
+ggplot(data = subset(shortened, subset = `NUMBER OF GUARDS` %in% t_f), aes(x = `TRB%`, fill = factor(`NUMBER OF GUARDS`))) + geom_histogram(position = "identity", alpha = 0.5, bins = 30) + labs(title = "TRB% by Lineup Type", x = "TRB%", fill = "Number of Guards") + scale_fill_manual(values = c("3" = "purple", "4" = "sky blue")) + theme(plot.title = element_text(hjust = 0.5)) + geom_text(x = 40, y =2.7, label = "Mann-Whitney U Test p-value: 0.02")
+
+tapply(shortened$`TRB%`[shortened$`NUMBER OF GUARDS` %in% t_f], shortened$`NUMBER OF GUARDS`[shortened$`NUMBER OF GUARDS` %in% t_f], summary)
+
+wilcox.test(`TRB%` ~ `NUMBER OF GUARDS`, data = subset(shortened, `NUMBER OF GUARDS` %in% t_f), exact = FALSE)
+
+```
+
+```{r}
+ggplot(data = subset(shortened, subset = `NUMBER OF GUARDS` %in% t_f), aes(x = `3PA/FGA`, fill = factor(`NUMBER OF GUARDS`))) + geom_histogram(position = "identity", alpha = 0.5, bins = 30) + labs(title = "3PA/FGA by Lineup Type", x = "3PA/FGA", fill = "Number of Guards") + scale_fill_manual(values = c("3" = "purple", "4" = "sky blue")) + theme(plot.title = element_text(hjust = 0.5))
+
+shapiro.test(shortened$`3PA/FGA`)
+
+summary(subset(shortened, subset = `NUMBER OF GUARDS` %in% t_f)$`3PA/FGA`)
+tapply(shortened$`3PA/FGA`[shortened$`NUMBER OF GUARDS` %in% t_f], shortened$`NUMBER OF GUARDS`[shortened$`NUMBER OF GUARDS` %in% t_f], summary)
+
+wilcox.test(`3PA/FGA` ~ `NUMBER OF GUARDS`, data = subset(shortened, `NUMBER OF GUARDS` %in% t_f), exact = FALSE)
+
+```
+
+```{r}
+ggplot(data = subset(shortened, subset = `NUMBER OF GUARDS` %in% t_f), aes(x = `TRUE SHOOTING %`, fill = factor(`NUMBER OF GUARDS`))) + geom_histogram(position = "identity", alpha = 0.5, bins = 30) + labs(title = "TRUE SHOOTING % by Lineup Type", x = "TRUE SHOOTING %", fill = "Number of Guards") + scale_fill_manual(values = c("3" = "purple", "4" = "sky blue")) + theme(plot.title = element_text(hjust = 0.5)) + geom_text(x = 45, y =2.05, label = "Mann-Whitney U Test p-value: 0.24")
+shapiro.test(shortened$`TRUE SHOOTING %`)
+
+summary(subset(shortened, subset = `NUMBER OF GUARDS` %in% t_f)$`TRUE SHOOTING %`)
+tapply(shortened$`TRUE SHOOTING %`[shortened$`NUMBER OF GUARDS` %in% t_f], shortened$`NUMBER OF GUARDS`[shortened$`NUMBER OF GUARDS` %in% t_f], summary)
+
+wilcox.test(`TRUE SHOOTING %` ~ `NUMBER OF GUARDS`, data = subset(shortened, `NUMBER OF GUARDS` %in% t_f), exact = FALSE)
+
+```
+
+```{r}
+ggplot(data = subset(shortened, subset = `NUMBER OF GUARDS` %in% t_f), aes(x = `PACE`, fill = factor(`NUMBER OF GUARDS`))) + geom_histogram(position = "identity", alpha = 0.5, bins = 30) + labs(title = "PACE by Lineup Type", x = "PACE", fill = "Number of Guards") + scale_fill_manual(values = c("3" = "purple", "4" = "sky blue")) + theme(plot.title = element_text(hjust = 0.5))
+
+shapiro.test(shortened$`PACE`)
+
+summary(subset(shortened, subset = `NUMBER OF GUARDS` %in% t_f)$`PACE`)
+tapply(shortened$`PACE`[shortened$`NUMBER OF GUARDS` %in% t_f], shortened$`NUMBER OF GUARDS`[shortened$`NUMBER OF GUARDS` %in% t_f], summary)
+
+wilcox.test(`PACE` ~ `NUMBER OF GUARDS`, data = subset(shortened, `NUMBER OF GUARDS` %in% t_f), exact = FALSE)
+```
+
+```{r}
+ggplot(data = subset(shortened, subset = `NUMBER OF GUARDS` %in% t_f), aes(x = `DEFENSIVE RATING`, fill = factor(`NUMBER OF GUARDS`))) + geom_histogram(position = "identity", alpha = 0.5, bins = 30) + labs(title = "DEFENSIVE RATING by Lineup Type", x = "DEFENSIVE RATING", fill = "Number of Guards") + scale_fill_manual(values = c("3" = "purple", "4" = "sky blue")) + theme(plot.title = element_text(hjust = 0.5))
+
+shapiro.test(shortened$`DEFENSIVE RATING`)
+
+summary(subset(shortened, subset = `NUMBER OF GUARDS` %in% t_f)$`DEFENSIVE RATING`)
+tapply(shortened$`DEFENSIVE RATING`[shortened$`NUMBER OF GUARDS` %in% t_f], shortened$`NUMBER OF GUARDS`[shortened$`NUMBER OF GUARDS` %in% t_f], summary)
+
+wilcox.test(`DEFENSIVE RATING` ~ `NUMBER OF GUARDS`, data = subset(shortened, `NUMBER OF GUARDS` %in% t_f), exact = FALSE)
+
+```
+
+```{r}
+ggplot(data = subset(shortened, subset = `NUMBER OF GUARDS` %in% t_f), aes(x = `OFFENSIVE RATING`, fill = factor(`NUMBER OF GUARDS`))) + geom_histogram(position = "identity", alpha = 0.5, bins = 30) + labs(title = "OFFENSIVE RATING by Lineup Type", x = "OFFENSIVE RATING", fill = "Number of Guards") + scale_fill_manual(values = c("3" = "purple", "4" = "sky blue")) + theme(plot.title = element_text(hjust = 0.5))
+
+shapiro.test(shortened$`OFFENSIVE RATING`)
+
+summary(subset(shortened, subset = `NUMBER OF GUARDS` %in% t_f)$`OFFENSIVE RATING`)
+tapply(shortened$`OFFENSIVE RATING`[shortened$`NUMBER OF GUARDS` %in% t_f], shortened$`NUMBER OF GUARDS`[shortened$`NUMBER OF GUARDS` %in% t_f], summary)
+
+wilcox.test(`OFFENSIVE RATING` ~ `NUMBER OF GUARDS`, data = subset(shortened, `NUMBER OF GUARDS` %in% t_f), exact = FALSE)
+
+```
+
+```{r}
+
+ggplot(data =  subset(shortened, subset = `NUMBER OF GUARDS` %in% t_f), aes(x = `PACE`, y = `NET RATING`, color = factor(`NUMBER OF GUARDS`))) + geom_point() + geom_smooth(method = "lm", se = FALSE) + scale_color_manual(values = c("3" = "purple", "4" = "sky blue")) + labs(title = "NET RATING vs PACE", color = "NUMBER OF GUARDS")  + theme(plot.title = element_text(hjust = 0.5))
+
+
+ggplot(data =  subset(shortened, subset = `NUMBER OF GUARDS` %in% t_f), aes(x = `TRB%`, y = `NET RATING`, color = factor(`NUMBER OF GUARDS`))) + geom_point() + geom_smooth(method = "lm", se = FALSE) + scale_color_manual(values = c("3" = "purple", "4" = "sky blue")) + labs(title = "NET RATING vs TRB%", color = "NUMBER OF GUARDS")  + theme(plot.title = element_text(hjust = 0.5))
+
+
+ggplot(data =  subset(shortened, subset = `NUMBER OF GUARDS` %in% t_f), aes(x = `TRUE SHOOTING %`, y = `NET RATING`, color = factor(`NUMBER OF GUARDS`))) + geom_point() + geom_smooth(method = "lm", se = FALSE) + scale_color_manual(values = c("3" = "purple", "4" = "sky blue")) + labs(title = "NET RATING vs TRUE SHOOTING %", color = "NUMBER OF GUARDS")  + theme(plot.title = element_text(hjust = 0.5))
+
+ggplot(data =  subset(shortened, subset = `NUMBER OF GUARDS` %in% t_f), aes(x = `3PA/FGA`, y = `NET RATING`, color = factor(`NUMBER OF GUARDS`))) + geom_point() + geom_smooth(method = "lm", se = FALSE) + scale_color_manual(values = c("3" = "purple", "4" = "sky blue")) + labs(title = "NET RATING vs 3PA/FGA", color = "NUMBER OF GUARDS")  + theme(plot.title = element_text(hjust = 0.5))
+
+
+```

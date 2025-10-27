@@ -1,0 +1,187 @@
+---
+title: "SURA"
+output:
+  pdf_document: default
+  html_document: default
+date: "2025-07-02"
+---
+
+```{r}
+library("readr")
+library("dplyr")
+library("ggplot2")
+library("stringr")
+library("tidyr")
+library("glue")
+```
+
+
+```{r}
+# combine all lineups (even repeats) to season.csv with game ID added
+
+list_files <- list.files('/Users/nicoletimko/Desktop/SURA project code/extended_cmu_data', pattern = "\\.csv$", full.names = TRUE)
+
+season <- tibble()
+
+for (f in list_files){
+  df <- read.csv(f, check.names = FALSE)
+  opponent <- str_remove(f, ".*/extended_cmu_data_")
+  season_opponent <- str_remove(opponent, ".csv")
+  season_opponent_vector <- strsplit(season_opponent, "_")
+  opponent_name <- season_opponent_vector[[1]][3]
+  season_name <- paste(season_opponent_vector[[1]][1], season_opponent_vector[[1]][2], sep= "_")
+  df$game_id = opponent_name
+  df$`LINEUP MINUTES` <- sapply(df$`LINEUP MINUTES`, function(t){
+  parts <- as.integer(strsplit(as.character(t),":")[[1]])
+  parts[1]*60 + parts[2]
+})
+  season <- rbind(season, df)
+}
+
+drop <- c("")
+season = season[,!(names(season) %in% drop)]
+season_name
+season <- season %>% rename('LINEUP SECONDS' = `LINEUP MINUTES`) %>% mutate(LINEUP_SORTED = sapply(season$`LINEUP (NAMES)`, function(l){
+  if (is.na(l)) return(NA)
+  paste(sort(strsplit(l, ", ")[[1]]), collapse = " ")
+}))
+
+write.csv(season,glue("~/Desktop/SURA project code/data frames/", season_name,"_season.csv"))
+```
+
+
+```{r}
+# see where to score differential cut off time -> SHOULD DO THIS AFTER OR BEFORE CUT SCRAP MINUTES?
+ggplot(season, aes(x = `SCORE DIFFERENTIAL WHEN ENTER`)) + stat_ecdf() + geom_vline(xintercept = -11) + geom_vline(xintercept = 20) + labs(title = "Score Differential", x = "Score Differential") + theme(plot.title = element_text(hjust = 0.5))
+
+quantile(season$`SCORE DIFFERENTIAL WHEN ENTER`,probs=c(0.1,0.9))
+
+```
+
+```{r}
+season <- subset(season, !((`SCORE DIFFERENTIAL WHEN ENTER` <= -11 |`SCORE DIFFERENTIAL WHEN ENTER` >= 20) & `QUARTER` == 4))
+```
+
+```{r}
+# combine lineups to take out under 6 min
+combined_lineups <- season %>% group_by(`LINEUP_SORTED`) %>% summarise(
+    `NUMBER OF GUARDS` = mean(`NUMBER OF GUARDS`),
+    `OPPONENT POSSESSIONS` = sum(`OPPONENT POSSESSIONS`, na.rm = TRUE),
+    `CMU POSSESSIONS` = sum(`CMU POSSESSIONS`, na.rm = TRUE),
+    `LINEUP SECONDS` = sum(`LINEUP SECONDS`, na.rm = TRUE),
+    `OPPONENT PTS` = sum(`OPPONENT PTS`, na.rm = TRUE),
+    `CMU PTS` = sum(`CMU PTS`, na.rm = TRUE),
+    `CMU 3PA` = sum(`CMU 3PA`, na.rm = TRUE),
+    `CMU FGA` = sum(`CMU FGA`, na.rm = TRUE),
+    `CMU FTA` = sum(`CMU FTA`, na.rm = TRUE),
+    `CMU REBOUNDS` = sum(`CMU REBOUNDS`, na.rm = TRUE),
+    `TOTAL REBOUNDS` = sum(`TOTAL REBOUNDS`, na.rm = TRUE),
+    `OPPONENTS` = paste(`game_id`, collapse = ", "),
+    `SCORE DIFFERENTIAL WHEN ENTER` = paste(`SCORE DIFFERENTIAL WHEN ENTER`, collapse = ", "),
+    `QUARTER` = paste(`QUARTER`, collapse = ", "),
+    `NUMBERS` = first(`NUMBERS`),
+    `SCORE` = paste(`SCORE`, collapse = ", "),
+    `LOCATION` = paste(`LOCATION`, collapse = ", ")
+  ) %>%mutate(`PACE` = 40 * ((`CMU POSSESSIONS` + `OPPONENT POSSESSIONS`) / (2 * `LINEUP SECONDS`/60)),
+    `OFFENSIVE RATING` = 100 * (`CMU PTS` / `CMU POSSESSIONS`),
+    `DEFENSIVE RATING` = 100 * (`OPPONENT PTS` / `OPPONENT POSSESSIONS`),
+    `NET RATING` = `OFFENSIVE RATING` - `DEFENSIVE RATING`,
+    `3PA/FGA` = `CMU 3PA` / `CMU FGA`,
+    `TRUE SHOOTING %` = 100 * (`CMU PTS` / ( 2 * (`CMU FGA` + (0.44* `CMU FTA`)))),
+    `TRB%`= 100 * (`CMU REBOUNDS` / `TOTAL REBOUNDS`))
+```
+
+
+```{r}
+# see where to cut time -> SHOULD DO THIS AFTER OR BEFORE CUT SCRAP MINUTES?
+ggplot(combined_lineups, aes(x = `LINEUP SECONDS`)) + stat_ecdf() + geom_vline(xintercept = 369.5) + labs(title = "Total Seconds", x = "Total Seconds") + theme(plot.title = element_text(hjust = 0.5))
+
+quantile(combined_lineups$`LINEUP SECONDS`,probs=c(0.9))
+```
+
+```{r}
+# take out under 380 seconds
+cut_sec <- subset(combined_lineups, `LINEUP SECONDS` > 369.5)
+
+# lineups cut that are not blowout lineups
+cut_offs <-  subset(combined_lineups, `LINEUP SECONDS` <= 369.5 & (`NUMBER OF GUARDS` == 3 | `NUMBER OF GUARDS` == 4 ))
+```
+
+```{r}
+
+combined_cut_offs <- cut_offs %>% group_by(`NUMBER OF GUARDS`) %>% summarise(
+    `NUMBER OF GUARDS` = mean(`NUMBER OF GUARDS`),
+    `OPPONENT POSSESSIONS` = sum(`OPPONENT POSSESSIONS`, na.rm = TRUE),
+    `CMU POSSESSIONS` = sum(`CMU POSSESSIONS`, na.rm = TRUE),
+    `LINEUP SECONDS` = sum(`LINEUP SECONDS`, na.rm = TRUE),
+    `OPPONENT PTS` = sum(`OPPONENT PTS`, na.rm = TRUE),
+    `CMU PTS` = sum(`CMU PTS`, na.rm = TRUE),
+    `CMU 3PA` = sum(`CMU 3PA`, na.rm = TRUE),
+    `CMU FGA` = sum(`CMU FGA`, na.rm = TRUE),
+    `CMU FTA` = sum(`CMU FTA`, na.rm = TRUE),
+    `CMU REBOUNDS` = sum(`CMU REBOUNDS`, na.rm = TRUE),
+    `TOTAL REBOUNDS` = sum(`TOTAL REBOUNDS`, na.rm = TRUE),
+    `OPPONENTS` = paste(`OPPONENTS`, collapse = ", "),
+    `SCORE DIFFERENTIAL WHEN ENTER` = paste(`SCORE DIFFERENTIAL WHEN ENTER`, collapse = ", "),
+    `QUARTER` = paste(`QUARTER`, collapse = ", "),
+    `NUMBERS` = first(`NUMBERS`),
+    `SCORE` = paste(`SCORE`, collapse = ", "),
+    `LOCATION` = paste(`LOCATION`, collapse = ", ")
+  ) %>% mutate(`PACE` = 40 * ((`CMU POSSESSIONS` + `OPPONENT POSSESSIONS`) / (2 * `LINEUP SECONDS`/60)),
+    `OFFENSIVE RATING` = 100 * (`CMU PTS` / `CMU POSSESSIONS`),
+    `DEFENSIVE RATING` = 100 * (`OPPONENT PTS` / `OPPONENT POSSESSIONS`),
+    `NET RATING` = `OFFENSIVE RATING` - `DEFENSIVE RATING`,
+    `3PA/FGA` = `CMU 3PA` / `CMU FGA`,
+    `TRUE SHOOTING %` = 100 * (`CMU PTS` / ( 2 * (`CMU FGA` + (0.44* `CMU FTA`)))),
+    `TRB%`= 100 * (`CMU REBOUNDS` / `TOTAL REBOUNDS`))
+
+```
+
+```{r}
+shortened <- rbind(combined_cut_offs %>% mutate(`LINEUP_SORTED` = "COMBINED", `NUMBERS` = "COMBINED"), cut_sec)
+```
+
+```{r}
+#ggplot(cut_sec, aes(x = `LINEUP SECONDS`)) + geom_histogram(position = "identity", bins = 100, fill = "purple", color = "black") + labs(title = "Total Seconds", x = "Total Possessions") + theme(plot.title = element_text(hjust = 0.5))
+player_lineup <- combined_lineups %>% separate_rows(`LINEUP_SORTED`, sep = " \\s*") %>% rename(`PLAYER` = `LINEUP_SORTED`)
+```
+
+```{r}
+player_lineup <- player_lineup %>% group_by(`PLAYER`) %>% summarise(
+    `OPPONENT POSSESSIONS` = sum(`OPPONENT POSSESSIONS`, na.rm = TRUE),
+    `CMU POSSESSIONS` = sum(`CMU POSSESSIONS`, na.rm = TRUE),
+    `LINEUP SECONDS` = sum(`LINEUP SECONDS`, na.rm = TRUE),
+    `OPPONENT PTS` = sum(`OPPONENT PTS`, na.rm = TRUE),
+    `CMU PTS` = sum(`CMU PTS`, na.rm = TRUE),
+    `CMU 3PA` = sum(`CMU 3PA`, na.rm = TRUE),
+    `CMU FGA` = sum(`CMU FGA`, na.rm = TRUE),
+    `CMU FTA` = sum(`CMU FTA`, na.rm = TRUE),
+    `CMU REBOUNDS` = sum(`CMU REBOUNDS`, na.rm = TRUE),
+    `TOTAL REBOUNDS` = sum(`TOTAL REBOUNDS`, na.rm = TRUE),
+    `OPPONENTS` = paste(`OPPONENTS`, collapse = ", "),
+    `SCORE DIFFERENTIAL WHEN ENTER` = paste(`SCORE DIFFERENTIAL WHEN ENTER`, collapse = ", "),
+    `QUARTER` = paste(`QUARTER`, collapse = ", ")
+  ) %>% mutate(`PACE` = 40 * ((`CMU POSSESSIONS` + `OPPONENT POSSESSIONS`) / (2 * `LINEUP SECONDS`/60)),
+    `OFFENSIVE RATING` = 100 * (`CMU PTS` / `CMU POSSESSIONS`),
+    `DEFENSIVE RATING` = 100 * (`OPPONENT PTS` / `OPPONENT POSSESSIONS`),
+    `NET RATING` = `OFFENSIVE RATING` - `DEFENSIVE RATING`,
+    `3PA/FGA` = `CMU 3PA` / `CMU FGA`,
+    `TRUE SHOOTING %` = 100 * (`CMU PTS` / ( 2 * (`CMU FGA` + (0.44* `CMU FTA`)))),
+    `TRB%`= 100 * (`CMU REBOUNDS` / `TOTAL REBOUNDS`))
+
+```
+
+```{r}
+player_lineup <- player_lineup %>% mutate(`NUMBER` = names_map[`PLAYER`], `LABEL` = paste(`NUMBER`, `LINEUP SECONDS`, sep= " - "))
+```
+
+
+```{r}
+# combined_lineup - all season UNIQUE lineups
+write.csv(combined_lineups,glue("~/Desktop/SURA project code/data frames/", season_name,"_combined_lineups.csv"))
+
+# cut_pos - all season UNIQUE lineups took out seconds under < 369.5
+write.csv(shortened,glue("~/Desktop/SURA project code/data frames/", season_name,"_shortened.csv"))
+
+write.csv(player_lineup,glue("~/Desktop/SURA project code/data frames/", season_name,"_player_lineup.csv"))
+```
